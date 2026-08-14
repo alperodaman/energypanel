@@ -1,0 +1,37 @@
+{
+  "name": "@enerjipanel/auth-service",
+  "version": "0.1.0",
+  "description": "EnerjiPanel Auth Service — register/login, JWT issuance",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "lint": "eslint .",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.9.1",
+    "@prisma/client": "7.9.1",
+    "bcrypt": "6.0.0",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "jsonwebtoken": "9.0.3",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@enerjipanel/eslint-config": "file:../../shared-eslint-config",
+    "cross-env": "10.1.0",
+    "eslint": "9.39.5",
+    "jest": "30.4.2",
+    "prisma": "7.9.1"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true,
+    "prisma@7.9.1": true,
+    "@prisma/engines@7.9.1": true
+  }
+}
