@@ -14,11 +14,13 @@
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@enerjipanel/shared-middleware": "file:../../shared-middleware",
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "bcrypt": "6.0.0",
     "dotenv": "17.4.2",
     "express": "5.2.1",
+    "express-rate-limit": "7.5.0",
     "jsonwebtoken": "9.0.3",
     "zod": "4.4.3"
   },
@@ -26,12 +28,9 @@
     "@enerjipanel/eslint-config": "file:../../shared-eslint-config",
     "cross-env": "10.1.0",
     "eslint": "9.39.5",
+    "globals": "14.0.0",
     "jest": "30.4.2",
-    "prisma": "7.9.1"
-  },
-  "allowScripts": {
-    "bcrypt@6.0.0": true,
-    "prisma@7.9.1": true,
-    "@prisma/engines@7.9.1": true
+    "prisma": "7.9.1",
+    "supertest": "7.1.4"
   }
 }

@@ -1,0 +1,21 @@
+{
+  "name": "@enerjipanel/shared-middleware",
+  "version": "0.1.0",
+  "description": "Shared Express middleware for EnerjiPanel services",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "jsonwebtoken": "9.0.3"
+  },
+  "devDependencies": {
+    "@enerjipanel/eslint-config": "file:../shared-eslint-config",
+    "eslint": "9.39.5"
+  }
+}

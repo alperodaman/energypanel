@@ -1,0 +1,17 @@
+{
+  "name": "enerjipanel",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "services/*",
+    "shared-contracts",
+    "shared-eslint-config",
+    "shared-middleware",
+    "frontend"
+  ],
+  "allowScripts": {
+    "bcrypt": true,
+    "prisma": true,
+    "@prisma/engines": true
+  }
+}
