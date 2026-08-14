@@ -1,0 +1,25 @@
+{
+  "name": "@enerjipanel/eslint-config",
+  "version": "0.1.0",
+  "description": "Shared ESLint flat config (neostandard + Prettier) for EnerjiPanel services",
+  "private": true,
+  "type": "module",
+  "main": "eslint.config.js",
+  "exports": {
+    ".": "./eslint.config.js"
+  },
+  "files": [
+    "eslint.config.js"
+  ],
+  "peerDependencies": {
+    "eslint": "9.39.5"
+  },
+  "dependencies": {
+    "eslint-config-prettier": "10.1.8",
+    "neostandard": "0.13.0"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "prettier": "3.9.6"
+  }
+}
