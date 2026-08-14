@@ -9,6 +9,9 @@ node_modules/
 dist/
 build/
 
+# Generated Prisma clients (custom output paths)
+services/*/generated/
+
 # Nginx runtime / certbot state
 nginx/certbot/conf/
 

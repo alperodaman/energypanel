@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Facility {
+  id          String   @id @default(uuid())
+  ownerUserId String
+  name        String
+  address     String?
+  type        String   // "home" | "business"
+  createdAt   DateTime @default(now())
+  devices     Device[]
+
+  @@index([ownerUserId])
+}
+
+model Device {
+  id                String   @id @default(uuid())
+  facilityId        String
+  facility          Facility @relation(fields: [facilityId], references: [id])
+  name              String
+  type              String   // "energy_meter" | "thermostat" | "boiler"
+  targetTemperature Float?
+  createdAt         DateTime @default(now())
+
+  @@index([facilityId])
+}
