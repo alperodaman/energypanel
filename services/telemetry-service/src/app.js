@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
+import devicesRouter from './routes/devices.js';
 import facilitiesRouter from './routes/facilities.js';
-import internalRouter from './routes/internal.js';
 
 const app = express();
 
@@ -19,6 +19,6 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/facilities', facilitiesRouter);
-app.use('/internal', internalRouter);
+app.use('/devices', devicesRouter);
 
 export default app;

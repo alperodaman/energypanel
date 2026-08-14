@@ -1,7 +1,7 @@
 {
-  "name": "@enerjipanel/facility-service",
+  "name": "@enerjipanel/telemetry-service",
   "version": "0.1.0",
-  "description": "EnerjiPanel Facility Service — facilities and devices",
+  "description": "EnerjiPanel Telemetry Service — sensor readings ingestion and cron simulator",
   "private": true,
   "type": "module",
   "main": "src/index.js",

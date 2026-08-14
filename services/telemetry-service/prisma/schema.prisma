@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Reading {
+  id         String   @id @default(uuid())
+  facilityId String // cross-service referans, FK DEĞİL
+  deviceId   String // cross-service referans, FK DEĞİL
+  deviceType String // "energy_meter" | "thermostat" | "boiler"
+  value      Float
+  unit       String
+  metadata   Json?
+  occurredAt DateTime
+
+  @@index([facilityId, deviceId, occurredAt(sort: Desc)])
+}
+
+model TrackedDevice {
+  id                String   @id @default(uuid())
+  facilityId        String
+  deviceId          String   @unique
+  deviceType        String // "energy_meter" | "thermostat" | "boiler"
+  targetTemperature Float?
+  createdAt         DateTime @default(now())
+
+  @@index([facilityId])
+}
+
+model FacilityOwnership {
+  facilityId  String   @id
+  ownerUserId String
+  createdAt   DateTime @default(now())
+
+  @@index([ownerUserId])
+}
