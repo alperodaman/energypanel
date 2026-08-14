@@ -1,0 +1,110 @@
+services:
+  postgres-auth:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_AUTH_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${POSTGRES_AUTH_PORT}:5432"
+    networks:
+      - enerjipanel-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres-facility:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_FACILITY_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_FACILITY_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_FACILITY_DB}
+    volumes:
+      - postgres-facility-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${POSTGRES_FACILITY_PORT}:5432"
+    networks:
+      - enerjipanel-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres-telemetry:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_TELEMETRY_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_TELEMETRY_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_TELEMETRY_DB}
+    volumes:
+      - postgres-telemetry-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${POSTGRES_TELEMETRY_PORT}:5432"
+    networks:
+      - enerjipanel-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:4.3-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - "127.0.0.1:${RABBITMQ_PORT}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT}:15672"
+    networks:
+      - enerjipanel-internal
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:8.10-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "127.0.0.1:${REDIS_PORT}:6379"
+    networks:
+      - enerjipanel-internal
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  enerjipanel-internal:
+    driver: bridge
+
+volumes:
+  postgres-auth-data:
+  postgres-facility-data:
+  postgres-telemetry-data:
+  rabbitmq-data:
+  redis-data:
