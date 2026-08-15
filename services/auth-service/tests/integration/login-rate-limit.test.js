@@ -1,5 +1,10 @@
 import request from 'supertest';
 import app from '../../src/app.js';
+import { prisma } from '../../src/db.js';
+
+afterAll(async () => {
+  await prisma.$disconnect();
+});
 
 describe('POST /auth/login rate limiting', () => {
   it('returns 429 after 5 attempts within a minute', async () => {

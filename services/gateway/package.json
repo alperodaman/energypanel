@@ -1,0 +1,29 @@
+{
+  "name": "@enerjipanel/gateway",
+  "version": "0.1.0",
+  "description": "EnerjiPanel API Gateway — routes to Auth, Facility and Telemetry services",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "lint": "eslint .",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "dependencies": {
+    "@enerjipanel/shared-middleware": "*",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "http-proxy-middleware": "4.2.0",
+    "jsonwebtoken": "9.0.3"
+  },
+  "devDependencies": {
+    "@enerjipanel/eslint-config": "file:../../shared-eslint-config",
+    "cross-env": "10.1.0",
+    "eslint": "9.39.5",
+    "globals": "14.0.0",
+    "jest": "30.4.2",
+    "supertest": "7.1.4"
+  }
+}

@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import app from '../../src/app.js';
 import { prisma } from '../../src/db.js';
+import { closeConnection } from '../../src/lib/rabbitmq.js';
 
 const createdFacilityIds = [];
 
@@ -38,6 +39,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   await prisma.$disconnect();
+  await closeConnection();
 });
 
 describe('GET /internal/facilities', () => {
