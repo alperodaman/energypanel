@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import authRouter from './routes/auth.js';
+import { prisma } from './db.js';
 
 const app = express();
 
@@ -14,8 +15,19 @@ if (process.env.NODE_ENV === 'production') {
 
 app.use(express.json());
 
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+app.get('/health', async (req, res) => {
+  const [postgres] = await Promise.allSettled([prisma.$queryRaw`SELECT 1`]);
+
+  const dependencies = {
+    postgres: postgres.status === 'fulfilled' ? 'ok' : 'error',
+  };
+
+  const isHealthy = Object.values(dependencies).every((status) => status === 'ok');
+
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'ok' : 'degraded',
+    dependencies,
+  });
 });
 
 app.use('/auth', authRouter);

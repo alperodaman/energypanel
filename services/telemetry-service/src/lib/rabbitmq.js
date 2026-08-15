@@ -93,4 +93,10 @@ async function publish(routingKey, payload) {
   }
 }
 
-export { consume, publish };
+// Exposed for the health check — reuses the same lazily-created channel/connection
+// rather than opening a fresh one just to probe liveness.
+async function checkConnection() {
+  await getChannel();
+}
+
+export { consume, publish, checkConnection };
