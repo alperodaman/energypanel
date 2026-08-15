@@ -7,7 +7,7 @@ const loginRateLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     error: 'too_many_requests',
-    message: 'Çok fazla giriş denemesi yaptınız. Lütfen 1 dakika sonra tekrar deneyin.',
+    message: 'Too many login attempts. Please try again in 1 minute.',
   },
 });
 

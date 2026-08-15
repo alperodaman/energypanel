@@ -1,0 +1,35 @@
+/*
+ * Tasarım tokenları — bkz. enerjipanel-tasarim.md §1.
+ * Değerler CSS custom property olarak :root'ta tanımlanır ki ileride
+ * [data-theme="dark"] ile override edilebilsin (bkz. tasarım dokümanı §9,
+ * Faz 0/1 kapsamında dark mode değerleri eklenmez, sadece yapı buna izin verir).
+ */
+:root {
+  /* Renk paleti */
+  --bg: #fbf9f6;
+  --surface: #ffffff;
+  --text-primary: #241c15;
+  --text-secondary: #6b6058;
+  --ember: #c2410c;
+  --teal: #0e7490;
+  --critical: #dc2626;
+  --success: #15803d;
+  --border: #e7e1d9;
+
+  /* Tipografi */
+  --font-display: 'Sora', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-data: 'JetBrains Mono', monospace;
+
+  /* Boşluk (8px taban) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-6: 48px;
+  --space-8: 64px;
+
+  /* Grid */
+  --radius-card: 12px;
+  --content-max-width: 1280px;
+}

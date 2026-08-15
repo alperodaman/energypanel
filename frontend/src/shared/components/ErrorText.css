@@ -1,0 +1,19 @@
+.error-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--critical);
+  font-weight: 600;
+}
+
+.error-text--field {
+  font-size: 0.8125rem;
+}
+
+.error-text--form {
+  font-size: 0.875rem;
+  padding: var(--space-1);
+  border: 1px solid var(--critical);
+  border-radius: 8px;
+}

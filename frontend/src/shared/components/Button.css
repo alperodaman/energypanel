@@ -1,0 +1,33 @@
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  padding: var(--space-1) var(--space-2);
+  border-radius: 8px;
+  background: var(--ember);
+  color: var(--surface);
+}
+
+.btn--secondary {
+  font: inherit;
+  font-weight: 400;
+  color: var(--teal);
+  background: none;
+  padding: 0;
+  text-decoration: underline;
+}
