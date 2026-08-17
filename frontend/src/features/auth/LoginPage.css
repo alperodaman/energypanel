@@ -1,11 +1,10 @@
 .login-page {
   display: flex;
   min-height: 100vh;
-}
-
-.login-page__stripe {
-  flex: 0 0 var(--space-3);
-  background: linear-gradient(180deg, var(--ember), var(--teal));
+  background:
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--ember) 16%, transparent), transparent 55%),
+    radial-gradient(circle at 88% 92%, color-mix(in srgb, var(--teal) 16%, transparent), transparent 55%),
+    var(--bg);
 }
 
 .login-page__panel {
@@ -15,6 +14,16 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.login-page__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 400px;
   padding: var(--space-4);
 }
 

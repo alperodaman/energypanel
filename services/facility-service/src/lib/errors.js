@@ -4,4 +4,10 @@ function createNotFoundError(message) {
   return error;
 }
 
-export { createNotFoundError };
+function createConflictError(message) {
+  const error = new Error(message);
+  error.code = 'CONFLICT';
+  return error;
+}
+
+export { createNotFoundError, createConflictError };

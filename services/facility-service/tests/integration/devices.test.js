@@ -141,3 +141,73 @@ describe('GET /facilities/:id/devices', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('PATCH /devices/:id', () => {
+  it('updates fields on a device belonging to an owned facility (200)', async () => {
+    const userId = crypto.randomUUID();
+    const facility = await createFacility(userId);
+    const created = await request(app)
+      .post(`/facilities/${facility.id}/devices`)
+      .set('Authorization', authHeader(userId))
+      .send({ name: uniqueName('thermostat'), type: 'thermostat', targetTemperature: 19 });
+
+    const res = await request(app)
+      .patch(`/devices/${created.body.id}`)
+      .set('Authorization', authHeader(userId))
+      .send({ targetTemperature: 22.5 });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ id: created.body.id, targetTemperature: 22.5 });
+  });
+
+  it("returns 404 for a device on another user's facility", async () => {
+    const owner = crypto.randomUUID();
+    const facility = await createFacility(owner);
+    const created = await request(app)
+      .post(`/facilities/${facility.id}/devices`)
+      .set('Authorization', authHeader(owner))
+      .send({ name: uniqueName('meter'), type: 'energy_meter' });
+
+    const res = await request(app)
+      .patch(`/devices/${created.body.id}`)
+      .set('Authorization', authHeader())
+      .send({ name: uniqueName('hijack') });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('DELETE /devices/:id', () => {
+  it('deletes a device belonging to an owned facility (204)', async () => {
+    const userId = crypto.randomUUID();
+    const facility = await createFacility(userId);
+    const created = await request(app)
+      .post(`/facilities/${facility.id}/devices`)
+      .set('Authorization', authHeader(userId))
+      .send({ name: uniqueName('meter'), type: 'energy_meter' });
+
+    const res = await request(app)
+      .delete(`/devices/${created.body.id}`)
+      .set('Authorization', authHeader(userId));
+
+    expect(res.status).toBe(204);
+
+    const stored = await prisma.device.findUnique({ where: { id: created.body.id } });
+    expect(stored).toBeNull();
+  });
+
+  it("returns 404 for a device on another user's facility", async () => {
+    const owner = crypto.randomUUID();
+    const facility = await createFacility(owner);
+    const created = await request(app)
+      .post(`/facilities/${facility.id}/devices`)
+      .set('Authorization', authHeader(owner))
+      .send({ name: uniqueName('meter'), type: 'energy_meter' });
+
+    const res = await request(app)
+      .delete(`/devices/${created.body.id}`)
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(404);
+  });
+});

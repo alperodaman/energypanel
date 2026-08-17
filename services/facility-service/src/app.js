@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import facilitiesRouter from './routes/facilities.js';
+import devicesRouter from './routes/devices.js';
 import internalRouter from './routes/internal.js';
 import { prisma } from './db.js';
 import { checkConnection as checkRabbitmq } from './lib/rabbitmq.js';
@@ -36,6 +37,7 @@ app.get('/health', async (req, res) => {
 });
 
 app.use('/facilities', facilitiesRouter);
+app.use('/devices', devicesRouter);
 app.use('/internal', internalRouter);
 
 export default app;

@@ -1,0 +1,156 @@
+.facilities-page {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.facilities-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.facilities-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.facilities-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.facilities-table th,
+.facilities-table td {
+  text-align: left;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.facilities-table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.facilities-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.facilities-table__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.facilities-table__view,
+.facilities-table__edit,
+.facilities-table__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--teal);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: 8px;
+}
+
+.facilities-table__delete {
+  color: var(--text-secondary);
+}
+
+.facilities-table__view:hover,
+.facilities-table__edit:hover {
+  background: var(--bg);
+}
+
+.facilities-table__delete:hover {
+  background: var(--bg);
+  color: var(--critical);
+}
+
+.facilities-table__view:focus-visible,
+.facilities-table__edit:focus-visible,
+.facilities-table__delete:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .facilities-table {
+    border: none;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .facilities-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .facilities-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .facilities-table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+
+  .facilities-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    border-bottom: 1px solid var(--border);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .facilities-table tr:last-child td,
+  .facilities-table td:last-child {
+    border-bottom: none;
+  }
+
+  .facilities-table td::before {
+    content: attr(data-label);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    flex-shrink: 0;
+  }
+
+  .facilities-table__actions {
+    justify-content: flex-end;
+  }
+
+  .facilities-table__actions::before {
+    content: none;
+  }
+}

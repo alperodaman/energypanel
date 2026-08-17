@@ -33,8 +33,17 @@ function createFacilityProxy() {
 function createTelemetryProxy() {
   return createServiceProxy({
     target: process.env.TELEMETRY_SERVICE_URL,
-    pathFilter: ['/facilities/*/telemetry', '/facilities/*/telemetry/**', '/devices/**'],
+    pathFilter: ['/facilities/*/telemetry', '/facilities/*/telemetry/**', '/devices/*/telemetry/**'],
   });
 }
 
-export { createAuthProxy, createFacilityProxy, createTelemetryProxy };
+// facility-service owns device CRUD (PATCH/DELETE /devices/:id); must be registered
+// before the telemetry proxy so it isn't shadowed by a broader /devices/** match.
+function createFacilityDeviceProxy() {
+  return createServiceProxy({
+    target: process.env.FACILITY_SERVICE_URL,
+    pathFilter: (path, req) => /^\/devices\/[^/]+$/.test(path) && ['PATCH', 'DELETE'].includes(req.method),
+  });
+}
+
+export { createAuthProxy, createFacilityProxy, createTelemetryProxy, createFacilityDeviceProxy };

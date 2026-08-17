@@ -31,3 +31,10 @@
   padding: 0;
   text-decoration: underline;
 }
+
+.btn--danger {
+  padding: var(--space-1) var(--space-2);
+  border-radius: 8px;
+  background: var(--critical);
+  color: var(--surface);
+}

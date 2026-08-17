@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import Button from '../../shared/components/Button.jsx'
+import Card from '../../shared/components/Card.jsx'
 import FormField from '../../shared/components/FormField.jsx'
 import ErrorText from '../../shared/components/ErrorText.jsx'
 import { loginUser, registerUser, fetchCurrentUser } from './authApi.js'
@@ -41,9 +42,10 @@ function validate (mode, { name, email, password }) {
 
 export default function LoginPage () {
   const navigate = useNavigate()
+  const location = useLocation()
   const setAuth = useAuthStore((state) => state.setAuth)
 
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState(location.pathname === '/register' ? 'register' : 'login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -55,6 +57,7 @@ export default function LoginPage () {
     setMode(nextMode)
     setFieldErrors({})
     setFormError('')
+    navigate(`/${nextMode}`, { replace: true })
   }
 
   async function handleSubmit (event) {
@@ -95,77 +98,75 @@ export default function LoginPage () {
 
   return (
     <div className="login-page">
-      <div className="login-page__stripe" aria-hidden="true" />
-
       <div className="login-page__panel">
-        <h1 className="login-page__logo">EnerjiPanel</h1>
+        <Card className="login-page__card">
+          <h1 className="login-page__logo">EnergyPanel</h1>
 
-        <form className="login-page__form" onSubmit={handleSubmit} noValidate>
-          {mode === 'register' && (
+          <form className="login-page__form" onSubmit={handleSubmit} noValidate>
+            {mode === 'register' && (
+              <FormField
+                id="name"
+                label="Name"
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                error={fieldErrors.name}
+              />
+            )}
+
             <FormField
-              id="name"
-              label="Name"
-              type="text"
-              autoComplete="name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              error={fieldErrors.name}
+              id="email"
+              label="Email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              error={fieldErrors.email}
             />
-          )}
 
-          <FormField
-            id="email"
-            label="Email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            error={fieldErrors.email}
-          />
+            <FormField
+              id="password"
+              label="Password"
+              type="password"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              error={fieldErrors.password}
+            />
 
-          <FormField
-            id="password"
-            label="Password"
-            type="password"
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            error={fieldErrors.password}
-          />
+            {formError && (
+              <ErrorText variant="form" role="alert" as="div">
+                {formError}
+              </ErrorText>
+            )}
 
-          {formError && (
-            <ErrorText variant="form" role="alert" as="div">
-              {formError}
-            </ErrorText>
-          )}
+            <Button type="submit" variant="primary" className="login-page__submit" loading={loading}>
+              {loading
+                ? (mode === 'login' ? 'Signing in…' : 'Creating account…')
+                : (mode === 'login' ? 'Sign In' : 'Create Account')}
+            </Button>
+          </form>
 
-          <Button type="submit" variant="primary" className="login-page__submit" loading={loading}>
-            {loading
-              ? (mode === 'login' ? 'Signing in…' : 'Creating account…')
-              : (mode === 'login' ? 'Sign In' : 'Create Account')}
-          </Button>
-        </form>
-
-        <p className="login-page__toggle">
-          {mode === 'login' ? (
-            <>
-              Don&apos;t have an account?{' '}
-              <Button type="button" variant="secondary" onClick={() => switchMode('register')}>
-                Sign up
-              </Button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <Button type="button" variant="secondary" onClick={() => switchMode('login')}>
-                Sign in
-              </Button>
-            </>
-          )}
-        </p>
+          <p className="login-page__toggle">
+            {mode === 'login' ? (
+              <>
+                Don&apos;t have an account?{' '}
+                <Button type="button" variant="secondary" onClick={() => switchMode('register')}>
+                  Sign up
+                </Button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <Button type="button" variant="secondary" onClick={() => switchMode('login')}>
+                  Sign in
+                </Button>
+              </>
+            )}
+          </p>
+        </Card>
       </div>
-
-      <div className="login-page__stripe" aria-hidden="true" />
     </div>
   )
 }

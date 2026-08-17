@@ -1,0 +1,16 @@
+.app-layout {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.app-layout__content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .app-layout__content {
+    padding-top: 56px;
+  }
+}

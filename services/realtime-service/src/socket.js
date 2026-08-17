@@ -4,7 +4,8 @@ import { authenticateSocket } from './middleware/authenticateSocket.js';
 import { getPubClient, getSubClient } from './lib/redis.js';
 
 async function createSocketServer(httpServer) {
-  const io = new Server(httpServer);
+  const corsOrigins = (process.env.CORS_ORIGIN ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
+  const io = new Server(httpServer, { cors: { origin: corsOrigins } });
 
   const [pubClient, subClient] = await Promise.all([getPubClient(), getSubClient()]);
   io.adapter(createAdapter(pubClient, subClient));

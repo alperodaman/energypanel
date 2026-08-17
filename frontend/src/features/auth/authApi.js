@@ -19,3 +19,10 @@ export function fetchCurrentUser (accessToken) {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 }
+
+export function refreshTokens ({ refreshToken }) {
+  return apiFetch('/auth/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ refreshToken }),
+  })
+}

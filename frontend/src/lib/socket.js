@@ -11,12 +11,20 @@ let socket = null
 export function getSocket () {
   if (socket) return socket
 
-  const { accessToken } = useAuthStore.getState()
-
   socket = io(REALTIME_URL, {
     autoConnect: false,
-    auth: { token: accessToken },
+    // Fonksiyon olarak verilir: Socket.io her (yeniden) bağlanma denemesinde
+    // bunu tekrar çağırır, böylece reconnect sırasında authStore'daki güncel
+    // token okunur (ilk bağlantıda donmuş eski token değil).
+    auth: (cb) => cb({ token: useAuthStore.getState().accessToken }),
   })
 
   return socket
+}
+
+export function resetSocket () {
+  if (socket) {
+    socket.disconnect()
+    socket = null
+  }
 }

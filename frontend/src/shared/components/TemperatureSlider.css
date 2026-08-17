@@ -1,0 +1,40 @@
+.temperature-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.temperature-slider__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.temperature-slider__header label {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.temperature-slider__value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--teal);
+}
+
+.temperature-slider__input {
+  width: 100%;
+  accent-color: var(--teal);
+}
+
+.temperature-slider__input:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.temperature-slider__range {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
