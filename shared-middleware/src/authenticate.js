@@ -9,7 +9,7 @@ function createAuthenticateMiddleware({ jwtSecret }) {
 
     const token = authHeader.slice('Bearer '.length);
     try {
-      req.user = jwt.verify(token, jwtSecret);
+      req.user = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] });
       return next();
     } catch {
       return res.status(401).json({ error: 'invalid_token' });

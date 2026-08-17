@@ -55,4 +55,4 @@ function startReconciliationJob() {
   }, intervalMs);
 }
 
-export { startReconciliationJob };
+export { startReconciliationJob, tick };

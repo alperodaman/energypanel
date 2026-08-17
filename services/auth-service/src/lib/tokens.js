@@ -21,7 +21,7 @@ function signAccessToken(payload, secret = process.env.JWT_SECRET) {
 }
 
 function verifyAccessToken(token, secret = process.env.JWT_SECRET) {
-  return jwt.verify(token, secret);
+  return jwt.verify(token, secret, { algorithms: ['HS256'] });
 }
 
 export {

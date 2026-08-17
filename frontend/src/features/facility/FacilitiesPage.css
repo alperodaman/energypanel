@@ -50,6 +50,14 @@
   border-bottom: none;
 }
 
+.facilities-table__skeleton-row td {
+  padding: var(--space-2);
+}
+
+.facilities-table__skeleton {
+  height: 20px;
+}
+
 .facilities-table__actions {
   display: flex;
   align-items: center;

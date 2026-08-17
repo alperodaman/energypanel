@@ -1,9 +1,12 @@
 import 'dotenv/config';
 import express from 'express';
+import { requireEnv } from '@enerjipanel/shared-middleware';
 import devicesRouter from './routes/devices.js';
 import facilitiesRouter from './routes/facilities.js';
 import { prisma } from './db.js';
 import { checkConnection as checkRabbitmq } from './lib/rabbitmq.js';
+
+requireEnv(['JWT_SECRET', 'INTERNAL_SERVICE_SECRET']);
 
 const app = express();
 

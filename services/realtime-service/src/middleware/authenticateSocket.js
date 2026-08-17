@@ -9,7 +9,7 @@ function authenticateSocket(socket, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     socket.data.userId = decoded.userId;
     socket.data.email = decoded.email;
     return next();

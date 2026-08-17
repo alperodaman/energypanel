@@ -1,5 +1,5 @@
 import { prisma } from '../db.js';
-import { hashPassword, verifyPassword } from '../lib/password.js';
+import { hashPassword, verifyPassword, DUMMY_PASSWORD_HASH } from '../lib/password.js';
 import {
   hashRefreshToken,
   generateRefreshToken,
@@ -25,6 +25,9 @@ async function register({ email, password, name }) {
 async function login({ email, password }) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
+    // Run bcrypt.compare against a dummy hash so this path costs the same
+    // as a wrong-password attempt; the result is intentionally discarded.
+    await verifyPassword(password, DUMMY_PASSWORD_HASH);
     throw createUnauthorizedError('invalid_credentials');
   }
 

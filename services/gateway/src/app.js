@@ -1,10 +1,17 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import { requireEnv } from '@enerjipanel/shared-middleware';
 import { createProxyRouter } from './routes/proxy.js';
 import { getHealth } from './controllers/healthController.js';
 
+requireEnv(['JWT_SECRET']);
+
 const app = express();
+
+// Security headers for the REST proxy path (WS traffic bypasses the gateway, see arch §2.1).
+app.use(helmet());
 
 if (process.env.NODE_ENV === 'production') {
   // Trust exactly one hop (the Nginx reverse proxy) for X-Forwarded-For.

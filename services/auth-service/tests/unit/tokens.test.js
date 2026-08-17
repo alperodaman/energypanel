@@ -59,4 +59,9 @@ describe('signAccessToken / verifyAccessToken', () => {
     const token = jwt.sign({ userId: 'u1' }, secret, { expiresIn: '-1s' });
     expect(() => verifyAccessToken(token, secret)).toThrow();
   });
+
+  it('rejects a token signed with alg "none"', () => {
+    const token = jwt.sign({ userId: 'u1' }, undefined, { algorithm: 'none' });
+    expect(() => verifyAccessToken(token, secret)).toThrow();
+  });
 });

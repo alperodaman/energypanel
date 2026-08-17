@@ -4,6 +4,7 @@ import { Home, Building2, Cpu } from 'lucide-react'
 
 import Card from '../../shared/components/Card.jsx'
 import Button from '../../shared/components/Button.jsx'
+import Skeleton from '../../shared/components/Skeleton.jsx'
 import { fetchFacilities, fetchDeviceTypeSummary } from '../facility/facilitiesApi.js'
 import DeviceTypeDonut from './DeviceTypeDonut.jsx'
 import './DashboardPage.css'
@@ -44,7 +45,22 @@ export default function DashboardPage () {
   }, [])
 
   if (loading) {
-    return <div className="dashboard-page" />
+    return (
+      <div className="dashboard-page" aria-hidden="true">
+        <Card className="dashboard-page__summary">
+          <div className="dashboard-page__summary-metrics">
+            <Skeleton className="dashboard-page__summary-skeleton" />
+            <Skeleton className="dashboard-page__summary-skeleton" />
+          </div>
+          <Skeleton className="dashboard-page__donut-skeleton" />
+        </Card>
+        <div className="dashboard-page__facility-grid">
+          <Skeleton className="dashboard-page__facility-skeleton" />
+          <Skeleton className="dashboard-page__facility-skeleton" />
+          <Skeleton className="dashboard-page__facility-skeleton" />
+        </div>
+      </div>
+    )
   }
 
   if (facilities.length === 0) {
@@ -94,16 +110,10 @@ export default function DashboardPage () {
         {facilities.map((facility) => (
           <Card
             key={facility.id}
+            as="button"
+            type="button"
             className="dashboard-page__facility-card"
-            role="button"
-            tabIndex={0}
             onClick={() => navigate(`/facilities/${facility.id}`)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                navigate(`/facilities/${facility.id}`)
-              }
-            }}
           >
             <span className="dashboard-page__facility-icon-badge">
               <Building2 size={20} className="dashboard-page__facility-icon" aria-hidden="true" />

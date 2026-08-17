@@ -1,7 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
+import { requireEnv } from '@enerjipanel/shared-middleware';
 import authRouter from './routes/auth.js';
 import { prisma } from './db.js';
+
+requireEnv(['JWT_SECRET']);
 
 const app = express();
 

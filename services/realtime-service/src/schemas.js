@@ -11,4 +11,11 @@ const telemetryReadingCreatedEventSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
-export { telemetryReadingCreatedEventSchema };
+const facilityCreatedEventSchema = z.object({
+  eventId: z.string(),
+  occurredAt: z.string(),
+  facilityId: z.string(),
+  ownerUserId: z.string(),
+});
+
+export { telemetryReadingCreatedEventSchema, facilityCreatedEventSchema };

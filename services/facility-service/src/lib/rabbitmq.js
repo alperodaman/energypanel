@@ -5,6 +5,7 @@ const RETRY_DELAYS_MS = [200, 500, 1000];
 
 let channelPromise = null;
 let currentConnection = null;
+const pendingPublishes = new Set();
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -41,7 +42,7 @@ function getChannel() {
 
 // Best-effort publish: retries a few times on failure, then logs and gives up
 // without throwing — callers must not be blocked by a broken message bus.
-async function publish(routingKey, payload) {
+async function publishWithRetry(routingKey, payload) {
   const message = Buffer.from(JSON.stringify(payload));
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
@@ -58,6 +59,21 @@ async function publish(routingKey, payload) {
       await sleep(RETRY_DELAYS_MS[attempt]);
     }
   }
+}
+
+// Fire-and-forget wrapper: callers don't await this, but the in-flight promise
+// (retries included) is tracked so a graceful shutdown can drain it first.
+function publish(routingKey, payload) {
+  const publishPromise = publishWithRetry(routingKey, payload);
+  pendingPublishes.add(publishPromise);
+  publishPromise.finally(() => pendingPublishes.delete(publishPromise));
+  return publishPromise;
+}
+
+// Awaited during graceful shutdown so in-flight publishes (and their retries)
+// finish before the process exits, without making the request path await them.
+async function waitForPendingPublishes() {
+  await Promise.allSettled(Array.from(pendingPublishes));
 }
 
 // Exposed for the health check — reuses the same lazily-created channel/connection
@@ -77,4 +93,4 @@ async function closeConnection() {
   }
 }
 
-export { publish, checkConnection, closeConnection };
+export { publish, checkConnection, closeConnection, waitForPendingPublishes };

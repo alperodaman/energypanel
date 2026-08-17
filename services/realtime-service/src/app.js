@@ -1,7 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
+import { requireEnv } from '@enerjipanel/shared-middleware';
 import { checkConnection as checkRabbitmq } from './lib/rabbitmq.js';
 import { checkConnection as checkRedis } from './lib/redis.js';
+
+requireEnv(['JWT_SECRET', 'INTERNAL_SERVICE_SECRET']);
 
 const app = express();
 

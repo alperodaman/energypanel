@@ -26,6 +26,7 @@
     "@enerjipanel/eslint-config": "file:../shared-eslint-config",
     "@vitejs/plugin-react": "6.0.5",
     "eslint": "9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "14.0.0",
     "vite": "8.2.1"
   }

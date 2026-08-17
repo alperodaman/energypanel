@@ -1,0 +1,15 @@
+.skeleton {
+  border-radius: var(--radius-card);
+  background: var(--border);
+  animation: skeleton-breathe 1600ms ease-in-out infinite;
+}
+
+@keyframes skeleton-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}

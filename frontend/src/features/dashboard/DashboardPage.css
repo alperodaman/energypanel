@@ -90,6 +90,21 @@
   background: var(--border);
 }
 
+.dashboard-page__summary-skeleton {
+  width: 96px;
+  height: 52px;
+}
+
+.dashboard-page__donut-skeleton {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}
+
+.dashboard-page__facility-skeleton {
+  height: 68px;
+}
+
 .dashboard-page__facility-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -100,7 +115,12 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  width: 100%;
   padding: var(--space-2);
+  margin: 0;
+  appearance: none;
+  font: inherit;
+  color: inherit;
   cursor: pointer;
   text-align: left;
   transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;

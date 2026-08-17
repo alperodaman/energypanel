@@ -4,6 +4,7 @@ const EXCHANGE = 'enerjipanel.events';
 const RETRY_DELAYS_MS = [200, 500, 1000];
 
 let channelPromise = null;
+let currentConnection = null;
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -15,10 +16,13 @@ async function connectChannel() {
   const connection = await amqp.connect(process.env.RABBITMQ_URL);
   connection.on('error', () => {
     channelPromise = null;
+    currentConnection = null;
   });
   connection.on('close', () => {
     channelPromise = null;
+    currentConnection = null;
   });
+  currentConnection = connection;
 
   const channel = await connection.createChannel();
   await channel.assertExchange(EXCHANGE, 'topic', { durable: true });
@@ -78,4 +82,15 @@ async function checkConnection() {
   await getChannel();
 }
 
-export { consume, checkConnection };
+// Closes the underlying connection so a Node process holding no other open handles
+// (e.g. a Jest test run) can exit on its own without --forceExit.
+async function closeConnection() {
+  channelPromise = null;
+  if (currentConnection) {
+    const connection = currentConnection;
+    currentConnection = null;
+    await connection.close();
+  }
+}
+
+export { consume, checkConnection, closeConnection };

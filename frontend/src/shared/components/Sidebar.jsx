@@ -24,6 +24,8 @@ export default function Sidebar () {
     const firstLink = navRef.current?.querySelector('a, button')
     firstLink?.focus()
 
+    const hamburgerNode = hamburgerRef.current
+
     function handleKeyDown (event) {
       if (event.key === 'Escape') {
         setIsOpen(false)
@@ -33,7 +35,7 @@ export default function Sidebar () {
     document.addEventListener('keydown', handleKeyDown)
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
-      hamburgerRef.current?.focus?.()
+      hamburgerNode?.focus?.()
     }
   }, [isOpen])
 

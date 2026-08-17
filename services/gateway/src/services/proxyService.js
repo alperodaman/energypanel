@@ -7,10 +7,9 @@ function createServiceProxy({ target, pathFilter }) {
     pathFilter,
     on: {
       error(err, req, res) {
+        console.error(`proxy error for ${req.method} ${req.url}:`, err);
         res.writeHead(502, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({ error: 'bad_gateway', message: 'upstream service unreachable', reason: err.message }),
-        );
+        res.end(JSON.stringify({ error: 'bad_gateway', message: 'upstream service unreachable' }));
       },
     },
   });

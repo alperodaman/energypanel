@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Zap, Thermometer, Flame } from 'lucide-react'
 
+import Skeleton from '../../shared/components/Skeleton.jsx'
 import { formatReading } from './formatReading.js'
 import './PulseStrip.css'
 
@@ -48,9 +49,9 @@ export default function PulseStrip ({ consumption, roomTemperature, boiler, load
   if (loading) {
     return (
       <div className="pulse-strip pulse-strip--loading" aria-hidden="true">
-        <div className="pulse-strip__skeleton" />
-        <div className="pulse-strip__skeleton" />
-        <div className="pulse-strip__skeleton" />
+        <Skeleton className="pulse-strip__skeleton" />
+        <Skeleton className="pulse-strip__skeleton" />
+        <Skeleton className="pulse-strip__skeleton" />
       </div>
     )
   }

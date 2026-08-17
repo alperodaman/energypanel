@@ -5,6 +5,7 @@ import { Eye, Pencil, Trash2 } from 'lucide-react'
 import Button from '../../shared/components/Button.jsx'
 import ErrorText from '../../shared/components/ErrorText.jsx'
 import ConfirmModal from '../../shared/components/ConfirmModal.jsx'
+import Skeleton from '../../shared/components/Skeleton.jsx'
 import { fetchFacilities, deleteFacility } from './facilitiesApi.js'
 import FacilityCreateModal from './FacilityCreateModal.jsx'
 import FacilityEditModal from './FacilityEditModal.jsx'
@@ -104,7 +105,18 @@ export default function FacilitiesPage () {
             </tr>
           </thead>
           <tbody>
-            {facilities.map((facility) => (
+            {loading && (
+              <>
+                {[0, 1, 2].map((row) => (
+                  <tr key={row} className="facilities-table__skeleton-row" aria-hidden="true">
+                    <td colSpan={5}>
+                      <Skeleton className="facilities-table__skeleton" />
+                    </td>
+                  </tr>
+                ))}
+              </>
+            )}
+            {!loading && facilities.map((facility) => (
               <tr key={facility.id}>
                 <td data-label="Name">{facility.name}</td>
                 <td data-label="Address">{facility.address || '—'}</td>
