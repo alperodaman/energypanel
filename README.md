@@ -4,6 +4,26 @@ A microservice-based platform for monitoring home/business energy consumption an
 
 > **Live:** [energypanel.alperodaman.com](https://energypanel.alperodaman.com) (frontend) · [api.energypanel.alperodaman.com](https://api.energypanel.alperodaman.com) (backend)
 
+## Why I Built This
+
+I'm applying for the Senior Full Stack Developer role at inavitas, and previously completed
+their Node.js Bootcamp certification (2022). Rather than apply with just a CV, I wanted to
+build something that reflects the actual problem inavitas solves — real-time energy visibility
+and optimization — end to end, on my own.
+
+EnerjiPanel is a small-scale, self-built version of the same core idea behind inavitas's EnMS
+product line: users register, add their facilities and devices (energy meters, thermostats,
+boilers), and see live consumption + comfort data streamed over WebSocket, with actionable
+savings insights planned for Phase 1 (e.g. "your boiler has been running 3 hours at 24°C,
+lowering it by 1° would save ~85 TRY/month").
+
+It's deliberately built as a JavaScript microservices architecture — matching the job posting's
+"Full stack Javascript development" and "Micro-Service Architecture" requirements directly —
+and deployed live on AWS EC2, not just a local demo.
+
+- 📄 Full architecture rationale: `docs/architecture.md`
+- 🎨 Design system rationale: `docs/design.md`
+
 ## Architecture Overview
 
 ```
@@ -27,6 +47,78 @@ WebSocket traffic bypasses the Gateway entirely — Nginx routes `/realtime` dir
 - **Real-time data:** Realtime Service pushes to clients over Socket.io; connection/subscription state lives in Redis so multiple instances can share it (`@socket.io/redis-adapter`).
 
 **Phase 1 (not yet built):** Alert & Insights Service — threshold-based alerts, savings/comfort insights. Everything else below is implemented and running in production.
+
+## Architectural Decisions & Trade-offs
+
+A few decisions here are deliberate and worth explaining rather than leaving implicit:
+
+**Why microservices for a solo project?** The honest answer: for a single developer, a
+modular monolith would have been faster to build. I chose microservices because the job
+posting explicitly asks for "Knowledge about... Micro-Service Architecture," and I wanted to
+demonstrate the actual pattern — independent deploys, database-per-service, event-driven
+communication — rather than just talk about it. In a real team setting with this scope, I'd
+likely start with a modular monolith and split services out once real scaling boundaries
+appeared.
+
+**Monorepo, not polyrepo.** All services and the frontend live in one repository (npm
+workspaces). Repo structure and runtime/deployment architecture are separate concerns —
+services still run as independent processes with independent databases; the monorepo just
+avoids the overhead of managing 6+ separate repos as a solo developer, while still sharing
+tooling (`shared-eslint-config`) and a stateless JWT middleware (`shared-middleware`) without
+publishing internal packages to a registry.
+
+**Stateless by default, one service with two kinds of state.** Every service except
+Realtime Service is stateless — any request carries everything it needs (`user_id` from the
+JWT), so any instance can serve any request without shared session state. Realtime Service is
+the deliberate exception, and it actually holds two distinct kinds of state in Redis, under
+separate key namespaces: ephemeral connection/subscription state (who's connected, who's
+subscribed to what — this is what `@socket.io/redis-adapter` bridges across instances), and a
+reconciled facility-ownership cache (`facility:owners`) that mirrors facility-service's
+ownership data, so `subscribe:facility` requests can be authorized without a synchronous call
+to facility-service. That cache is kept in sync the same way telemetry-service keeps its own
+local read models in sync: consuming the `facility.created` event in near-real-time, backed by
+a periodic reconciliation job against facility-service's `/internal/facilities` endpoint as a
+self-healing fallback for any event that's lost or fails to process.
+
+**Database-per-service, with one deliberate exception.** Each service owns its own database;
+there are no cross-service foreign keys, only plain UUID references (e.g.
+`Facility.ownerUserId`). The exception is `alert-service` (Phase 1), which will use both
+Postgres (structured, query-heavy data — alerts, thresholds) and MongoDB (flexible,
+frequently-changing data — notification read-state, insight history). This isn't a violation
+of database-per-service; the rule is "each database has exactly one owning service," not
+"each service may use only one database technology."
+
+**Event-driven discovery, not synchronous coupling.** Neither telemetry-service nor
+realtime-service calls facility-service synchronously to know which facilities/devices exist —
+both consume `device.created`/`facility.created` events and keep their own local read models
+(Postgres for telemetry-service, Redis for realtime-service). Since RabbitMQ events are
+ephemeral once acknowledged, both services also run a periodic reconciliation job against
+facility-service's internal endpoint as a self-healing backstop — additive-only (upserts, never
+deletes) by deliberate design, so a stale-but-safe local state is preferred over losing data or
+adding a synchronous cross-service dependency to the request path.
+
+**Fail-fast environment validation.** Every service calls a shared `requireEnv(names)` helper
+at startup, before any database/Redis/RabbitMQ connection is attempted. If a required secret is
+missing, the service logs exactly which one and exits immediately, instead of starting in a
+half-working state and failing unpredictably on the first real request.
+
+**WebSocket auth via Socket.io handshake, not headers.** The client passes the JWT through
+`auth: { token }` at connection time (`socket.handshake.auth.token` on the server), not an
+`Authorization` header — browsers can't set custom headers during a native WebSocket
+handshake, so this is a hard requirement, not a style choice.
+
+**Plain JavaScript, not TypeScript.** The job posting says "Full stack Javascript
+development" specifically. My TypeScript/NestJS experience is demonstrated in a separate
+project instead of retrofitting this one — shared event contracts are still typed via JSDoc
+`@typedef`, which catches most cross-service schema drift without a build step.
+
+**Prisma over Drizzle.** For a classic Node.js deployment target (a real server, not
+edge/serverless), Prisma's mature migration tooling and generated client outweigh Drizzle's
+main advantage, which is edge-runtime performance — not relevant here.
+
+**Self-managed EC2 over Railway/Render.** A managed PaaS would have been faster to deploy to,
+but I already had an AWS account and a domain via Route 53, and wanted to set up DNS, a
+reverse proxy, and TLS myself end to end, not have a platform do it for me.
 
 ## Services
 
@@ -148,6 +240,18 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 - **SSL:** Let's Encrypt certificates, auto-renewed by the `certbot` container (checks every 12 hours).
 - **Monitoring:** UptimeRobot pings `https://energypanel.alperodaman.com` and `https://api.energypanel.alperodaman.com/health` every 5 minutes and alerts on downtime.
 - **Memory constraint:** the `t3.small` instance has only 2GB RAM, which can't survive a parallel `docker compose build`. A 2GB swap file (`/swapfile`) was added as a safety net, and images are **always built one at a time** — `docker compose build <service-name>` — never a bare `docker compose build`.
+- **Prisma in Docker:** the runtime stage of any Prisma-using service must copy not just the
+  generated client but also the `prisma/` folder (schema + migrations) and `prisma.config.ts` —
+  `prisma migrate deploy` fails silently without them.
+- **npm workspace hoisting is inconsistent across services** (some get a workspace-local
+  `node_modules`, some don't — this is npm's own decision, not a bug). Never assumed in a
+  Dockerfile; each service's build is verified individually before its `COPY` layers are
+  finalized.
+- **`docker-compose.prod.yml` needs explicit `CORS_ORIGIN` overrides** for gateway and
+  realtime-service — without them, the local dev value silently leaks into production.
+- **Certbot's custom renew-loop entrypoint swallows one-off commands** — running anything other
+  than the built-in 12-hour renew loop (e.g. issuing a new cert manually) requires
+  `--entrypoint certbot` to override it.
 
 Typical deploy:
 
@@ -179,3 +283,32 @@ No application or database port is published beyond `127.0.0.1` locally; in prod
 - **Phase 0 — ✅ Completed:** end-to-end flow (register → login → add facility/device → live telemetry over WebSocket), all 5 core services, Dockerized deployment on AWS EC2 with Nginx + Let's Encrypt, UptimeRobot monitoring, basic tests for auth-service and facility-service.
 - **Phase 1:** Alert & Insights Service (thresholds, alerts, comfort/savings insights), notification system (toasts, bell dropdown), history/analytics page, settings page, GitHub Actions CI (lint + test per PR), expanded test coverage (telemetry, realtime, alert-service), structured logging (Pino) + `/metrics` (prom-client).
 - **Phase 2:** MongoDB for notification read-state and insight history, accessibility improvements, full responsive design, dark mode, rate limiting/validation on all endpoints, Grafana Cloud dashboards, GitHub Actions → EC2 automated deploy.
+
+## Known Trade-offs & Deliberate Omissions
+
+Things I'm aware of and intentionally deferred or partially rolled out, not things I missed:
+
+- **No idempotency/dedup on telemetry events yet.** RabbitMQ delivers at-least-once; if a
+  message is redelivered, the same reading could theoretically be processed twice. At Phase
+  0's low demo volume this risk is negligible; Phase 1 adds `eventId`-based dedup.
+- **No protection against concurrent refresh-token requests** (two simultaneous `/auth/refresh`
+  calls racing each other). Deferred to Phase 2.
+- **Secrets are `.env` files**, manually copied to EC2 via SCP — not a managed secret store
+  (AWS Secrets Manager, Doppler). A conscious Phase 0 scope cut, not an oversight.
+- **Reconciliation jobs are additive-only**, in both telemetry-service and realtime-service —
+  they upsert from facility-service's source of truth but never delete local records that were
+  removed upstream. Worst case is a stale-but-safe local state; deletion handling is a Phase
+  1/2 addition.
+- **Graceful shutdown is currently implemented only in facility-service** — on `SIGTERM`, it
+  stops accepting new connections and waits (up to a timeout) for any in-flight RabbitMQ
+  publishes to finish before exiting. The other four services don't have this yet; it's a
+  deliberate incremental rollout, extracted into a shared helper once it's needed in more than
+  one place.
+- **`shared-contracts` exists as a workspace but isn't imported by any service yet.** Event
+  shapes are currently kept consistent by convention and documentation rather than a shared,
+  enforced type import. Planned before `alert-service` (Phase 1) adds a new event consumer.
+- **Monitoring is deliberately staged for resource reasons:** Phase 0 uses UptimeRobot (zero
+  EC2 resource cost); Phase 1 adds structured logging (Pino) and a `/metrics` endpoint
+  (prom-client); Phase 2 pushes those metrics to Grafana Cloud's free tier rather than
+  self-hosting Prometheus + Grafana on the same `t3.small` instance that already runs 6
+  services, 3 Postgres instances, RabbitMQ, and Redis.
