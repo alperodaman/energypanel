@@ -1,4 +1,4 @@
-# EnerjiPanel
+# EnergyPanel
 
 A microservice-based platform for monitoring home/business energy consumption and indoor comfort (temperature, boiler/thermostat state) in real time. Built on a Node.js (Express) + React (JavaScript) stack, with database-per-service isolation, RabbitMQ for event-driven communication, and Socket.io for live data push.
 
