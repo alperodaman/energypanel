@@ -8,8 +8,6 @@ services:
       POSTGRES_DB: ${POSTGRES_AUTH_DB}
     volumes:
       - postgres-auth-data:/var/lib/postgresql
-    ports:
-      - "127.0.0.1:${POSTGRES_AUTH_PORT}:5432"
     networks:
       - enerjipanel-internal
     healthcheck:
@@ -28,8 +26,6 @@ services:
       POSTGRES_DB: ${POSTGRES_FACILITY_DB}
     volumes:
       - postgres-facility-data:/var/lib/postgresql
-    ports:
-      - "127.0.0.1:${POSTGRES_FACILITY_PORT}:5432"
     networks:
       - enerjipanel-internal
     healthcheck:
@@ -48,8 +44,6 @@ services:
       POSTGRES_DB: ${POSTGRES_TELEMETRY_DB}
     volumes:
       - postgres-telemetry-data:/var/lib/postgresql
-    ports:
-      - "127.0.0.1:${POSTGRES_TELEMETRY_PORT}:5432"
     networks:
       - enerjipanel-internal
     healthcheck:
@@ -68,7 +62,8 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     ports:
-      - "127.0.0.1:${RABBITMQ_PORT}:5672"
+      # Management UI only — kept open for local debugging. AMQP (5672) stays
+      # internal-only, all consumers/producers now talk over the Docker network.
       - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT}:15672"
     networks:
       - enerjipanel-internal
@@ -87,12 +82,186 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - redis-data:/data
-    ports:
-      - "127.0.0.1:${REDIS_PORT}:6379"
     networks:
       - enerjipanel-internal
     healthcheck:
       test: ["CMD-SHELL", "redis-cli --no-auth-warning -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 4001
+      DATABASE_URL: "postgresql://${POSTGRES_AUTH_USER}:${POSTGRES_AUTH_PASSWORD}@postgres-auth:5432/${POSTGRES_AUTH_DB}?schema=public"
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - enerjipanel-internal
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  facility-service:
+    build:
+      context: .
+      dockerfile: services/facility-service/Dockerfile
+    restart: unless-stopped
+    stop_grace_period: 15s
+    environment:
+      PORT: 4002
+      DATABASE_URL: "postgresql://${POSTGRES_FACILITY_USER}:${POSTGRES_FACILITY_PASSWORD}@postgres-facility:5432/${POSTGRES_FACILITY_DB}?schema=public"
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672"
+    networks:
+      - enerjipanel-internal
+    depends_on:
+      postgres-facility:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  telemetry-service:
+    build:
+      context: .
+      dockerfile: services/telemetry-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      DATABASE_URL: "postgresql://${POSTGRES_TELEMETRY_USER}:${POSTGRES_TELEMETRY_PASSWORD}@postgres-telemetry:5432/${POSTGRES_TELEMETRY_DB}?schema=public"
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672"
+      TELEMETRY_INTERVAL_MS: 10000
+      FACILITY_SERVICE_URL: "http://facility-service:4002"
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      RECONCILIATION_INTERVAL_MS: 300000
+    networks:
+      - enerjipanel-internal
+    depends_on:
+      postgres-telemetry:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3003/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  realtime-service:
+    build:
+      context: .
+      dockerfile: services/realtime-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 3005
+      CORS_ORIGIN: "http://localhost:8091"
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672"
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379"
+      FACILITY_SERVICE_URL: "http://facility-service:4002"
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      RECONCILIATION_INTERVAL_MS: 300000
+    networks:
+      - enerjipanel-internal
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3005/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_SERVICE_URL: "http://auth-service:4001"
+      FACILITY_SERVICE_URL: "http://facility-service:4002"
+      TELEMETRY_SERVICE_URL: "http://telemetry-service:3003"
+      CORS_ORIGIN: "http://localhost:8091"
+    networks:
+      - enerjipanel-internal
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+      telemetry-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_GATEWAY_URL: ${VITE_GATEWAY_URL}
+        VITE_REALTIME_URL: ${VITE_REALTIME_URL}
+    restart: unless-stopped
+    networks:
+      - enerjipanel-internal
+    depends_on:
+      gateway:
+        condition: service_healthy
+      realtime-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nginx-proxy:
+    image: nginx:latest
+    restart: unless-stopped
+    volumes:
+      - ./nginx/conf.d/local.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - enerjipanel-internal
+    depends_on:
+      frontend:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+      realtime-service:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8091:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:80/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

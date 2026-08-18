@@ -12,6 +12,10 @@ export function getSocket () {
   if (socket) return socket
 
   socket = io(REALTIME_URL, {
+    // nginx-proxy (local) / reverse-proxy Nginx (EC2) exposes the realtime-service
+    // under the /realtime/ path prefix; the server itself still speaks the default
+    // Socket.IO path (/socket.io/), so only the client-side path needs the prefix.
+    path: '/realtime/socket.io/',
     autoConnect: false,
     // Fonksiyon olarak verilir: Socket.io her (yeniden) bağlanma denemesinde
     // bunu tekrar çağırır, böylece reconnect sırasında authStore'daki güncel
