@@ -14,6 +14,7 @@ services/*/generated/
 
 # Nginx runtime / certbot state
 nginx/certbot/conf/
+nginx/conf.d/production/*.disabled
 
 # Logs
 *.log
