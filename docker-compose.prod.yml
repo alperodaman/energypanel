@@ -22,6 +22,14 @@ services:
     entrypoint: >
       sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'
 
+  gateway:
+    environment:
+      CORS_ORIGIN: "https://energypanel.alperodaman.com"
+
+  realtime-service:
+    environment:
+      CORS_ORIGIN: "https://energypanel.alperodaman.com"
+
   frontend:
     build:
       args:
