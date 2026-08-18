@@ -52,6 +52,9 @@ COPY --from=build /app/services/telemetry-service/generated ./services/telemetry
 COPY --from=build /app/services/telemetry-service/prisma ./services/telemetry-service/prisma
 COPY services/telemetry-service/src ./services/telemetry-service/src
 COPY services/telemetry-service/package.json ./services/telemetry-service/package.json
+# `prisma migrate deploy` (run manually against this image) reads the
+# datasource URL from prisma.config.ts, not from schema.prisma (Prisma 7).
+COPY services/telemetry-service/prisma.config.ts ./services/telemetry-service/prisma.config.ts
 
 WORKDIR /app/services/telemetry-service
 USER node

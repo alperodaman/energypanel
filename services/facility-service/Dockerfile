@@ -52,6 +52,9 @@ COPY --from=build /app/services/facility-service/generated ./services/facility-s
 COPY --from=build /app/services/facility-service/prisma ./services/facility-service/prisma
 COPY services/facility-service/src ./services/facility-service/src
 COPY services/facility-service/package.json ./services/facility-service/package.json
+# `prisma migrate deploy` (run manually against this image) reads the
+# datasource URL from prisma.config.ts, not from schema.prisma (Prisma 7).
+COPY services/facility-service/prisma.config.ts ./services/facility-service/prisma.config.ts
 
 WORKDIR /app/services/facility-service
 USER node
