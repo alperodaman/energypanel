@@ -1,0 +1,29 @@
+# Production override — used together with docker-compose.yml, never standalone:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Swaps the local nginx-proxy setup (127.0.0.1:8091, path-based routing) for the
+# public-facing one (ports 80/443, host-based routing + Let's Encrypt) described in
+# mimari dokümanı §6.3, without touching the local dev docker-compose.yml.
+services:
+  nginx-proxy:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d/production:/etc/nginx/conf.d:ro
+      - ./nginx/certbot/conf:/etc/letsencrypt:ro
+      - ./nginx/certbot/www:/var/www/certbot:ro
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    entrypoint: >
+      sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'
+
+  frontend:
+    build:
+      args:
+        VITE_GATEWAY_URL: https://api.energypanel.alperodaman.com
+        VITE_REALTIME_URL: https://api.energypanel.alperodaman.com

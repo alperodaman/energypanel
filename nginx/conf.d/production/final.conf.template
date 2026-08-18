@@ -1,0 +1,82 @@
+# Production final config — SSL, activated after the first certificate is issued
+# (mimari dokümanı §6.3). Template only: the .template extension keeps nginx from
+# loading this automatically (it only reads *.conf from conf.d). After
+# `certbot certonly --webroot ...` succeeds against bootstrap.conf, copy this file to
+# final.conf (dropping .template) on the server and restart nginx-proxy — that swap is
+# done by hand over SSH, not by this repo.
+server {
+    listen 80;
+    server_name energypanel.alperodaman.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name energypanel.alperodaman.com;
+
+    ssl_certificate     /etc/letsencrypt/live/energypanel.alperodaman.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/energypanel.alperodaman.com/privkey.pem;
+
+    location / {
+        proxy_pass http://frontend:80;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+server {
+    listen 80;
+    server_name api.energypanel.alperodaman.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name api.energypanel.alperodaman.com;
+
+    # Same cert directory as the energypanel.alperodaman.com block below, not a typo:
+    # `certbot certonly -d energypanel.alperodaman.com -d api.energypanel.alperodaman.com`
+    # creates one certificate directory, named after the first -d domain, that covers
+    # both names as SANs — it does not create a second live/api.energypanel.../ directory.
+    ssl_certificate     /etc/letsencrypt/live/energypanel.alperodaman.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/energypanel.alperodaman.com/privkey.pem;
+
+    location /realtime/ {
+        rewrite ^/realtime/(.*)$ /$1 break;
+        proxy_pass http://realtime-service:3005;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        proxy_pass http://gateway:4000;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
