@@ -49,6 +49,7 @@ COPY --from=deps /app/shared-middleware ./shared-middleware
 # at runtime too, not just in node_modules.
 COPY shared-middleware/src ./shared-middleware/src
 COPY --from=build /app/services/facility-service/generated ./services/facility-service/generated
+COPY --from=build /app/services/facility-service/prisma ./services/facility-service/prisma
 COPY services/facility-service/src ./services/facility-service/src
 COPY services/facility-service/package.json ./services/facility-service/package.json
 

@@ -49,6 +49,7 @@ COPY --from=deps /app/shared-middleware ./shared-middleware
 # at runtime too, not just in node_modules.
 COPY shared-middleware/src ./shared-middleware/src
 COPY --from=build /app/services/telemetry-service/generated ./services/telemetry-service/generated
+COPY --from=build /app/services/telemetry-service/prisma ./services/telemetry-service/prisma
 COPY services/telemetry-service/src ./services/telemetry-service/src
 COPY services/telemetry-service/package.json ./services/telemetry-service/package.json
 
