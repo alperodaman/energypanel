@@ -6,20 +6,20 @@ A microservice-based platform for monitoring home/business energy consumption an
 
 ## Why I Built This
 
-I'm applying for the Senior Full Stack Developer role at inavitas, and previously completed
-their Node.js Bootcamp certification (2022). Rather than apply with just a CV, I wanted to
-build something that reflects the actual problem inavitas solves — real-time energy visibility
-and optimization — end to end, on my own.
+Energy management software (EnMS) is a space I'm genuinely interested in — home and business
+owners usually only see their energy consumption once a month, on a bill, with no real-time
+visibility, and indoor comfort (temperature, heating/cooling state) is typically tracked by a
+separate, disconnected system entirely. I wanted to build a real, working system that tackles
+that problem end to end, rather than just talk about the idea.
 
-EnerjiPanel is a small-scale, self-built version of the same core idea behind inavitas's EnMS
-product line: users register, add their facilities and devices (energy meters, thermostats,
-boilers), and see live consumption + comfort data streamed over WebSocket, with actionable
-savings insights planned for Phase 1 (e.g. "your boiler has been running 3 hours at 24°C,
-lowering it by 1° would save ~85 TRY/month").
+EnerjiPanel does exactly that: users register, add their facilities and devices (energy meters,
+thermostats, boilers), and see live consumption + comfort data streamed over WebSocket, with
+actionable savings insights planned for Phase 1 (e.g. "your boiler has been running 3 hours at
+24°C, lowering it by 1° would save ~85 TRY/month").
 
-It's deliberately built as a JavaScript microservices architecture — matching the job posting's
-"Full stack Javascript development" and "Micro-Service Architecture" requirements directly —
-and deployed live on AWS EC2, not just a local demo.
+It's deliberately built as a JavaScript microservices architecture — Node.js/Express on the
+backend, React on the frontend, with database-per-service isolation and RabbitMQ for
+event-driven communication — and deployed live on AWS EC2, not just a local demo.
 
 - 📄 Full architecture rationale: `docs/architecture.md`
 - 🎨 Design system rationale: `docs/design.md`
@@ -107,10 +107,11 @@ half-working state and failing unpredictably on the first real request.
 `Authorization` header — browsers can't set custom headers during a native WebSocket
 handshake, so this is a hard requirement, not a style choice.
 
-**Plain JavaScript, not TypeScript.** The job posting says "Full stack Javascript
-development" specifically. My TypeScript/NestJS experience is demonstrated in a separate
-project instead of retrofitting this one — shared event contracts are still typed via JSDoc
-`@typedef`, which catches most cross-service schema drift without a build step.
+**Plain JavaScript, not TypeScript.** This project is deliberately kept in plain JavaScript to
+demonstrate depth in the Node/Express/React JS stack specifically. My TypeScript/NestJS
+experience is demonstrated in a separate project instead of retrofitting this one — shared
+event contracts are still typed via JSDoc `@typedef`, which catches most cross-service schema
+drift without a build step.
 
 **Prisma over Drizzle.** For a classic Node.js deployment target (a real server, not
 edge/serverless), Prisma's mature migration tooling and generated client outweigh Drizzle's
